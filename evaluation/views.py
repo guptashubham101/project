@@ -7,10 +7,11 @@ import re
 from rest_framework.response import Response
 import hashlib
 from difflib import SequenceMatcher
-import urllib2
 from tidylib import tidy_document
 import traceback
 import tinycss
+import jsbeautifier
+
 
 class FrontAutomate(APIView):
 
@@ -120,7 +121,7 @@ class FrontAutomate(APIView):
                 #Code quality check of js
                 for js_file in js_list:
                     counter += 1
-                    document = subprocess.check_output(['js-beautify', js_file])
+                    document = jsbeautifier.beautify_file(js_file)
                     js_file = open(js_file, 'r')
                     js_file = js_file.read()
                     lines = js_file.splitlines()
