@@ -21,10 +21,10 @@ class FrontAutomate(APIView):
         html_indent_bar = 80
         css_error_bar = 10
         js_indent_bar = 80
-        js_error_bar = 15
 
         try:
-            git_url = "https://github.com/guptashubham101/samples"
+            #"https://github.com/guptashubham101/samples"
+            git_url = request.data['git_url']
 
             if git_url:
                 end_name = str(git_url).split('/')[-1]
@@ -83,14 +83,14 @@ class FrontAutomate(APIView):
                 if number_of_lines:
                     ratio = (float(file_errors) / float(number_of_lines)) * 100
                     if ratio >= html_error_bar:
-                        points -= 35
+                        points -= 30
 
                     ratio = ratio_of_similarity / counter
                     if ratio <= html_indent_bar:
-                        points -= 35
+                        points -= 25
 
                 else:
-                    points -= 70
+                    points -= 55
 
                 number_of_lines = 0
                 file_errors = 0
@@ -107,57 +107,38 @@ class FrontAutomate(APIView):
 
                 if number_of_lines:
                     ratio = (float(file_errors) / float(number_of_lines)) * 100
-                    print ratio
-                    print float(file_errors)
-                    print float(number_of_lines)
                     if ratio >= css_error_bar:
-                        points -= 30
+                        points -= 20
 
                 else:
-                    points -= 30
+                    points -= 20
 
-                '''
                 counter = 0
                 ratio_of_similarity = 0
                 number_of_lines = 0
-                file_errors = 0
 
-                 Code quality check of js
+                #Code quality check of js
                 for js_file in js_list:
                     counter += 1
-                    p = subprocess.Popen(["jshint", js_file], stdout=subprocess.PIPE)
-                    error = p.communicate()
-                    error = str(error)
                     document = subprocess.check_output(['js-beautify', js_file])
                     js_file = open(js_file, 'r')
                     js_file = js_file.read()
                     lines = js_file.splitlines()
                     number_of_lines += len(lines)
                     ratio_of_similarity += (SequenceMatcher(None, document, js_file).ratio()) * 100
-                    found = re.findall(r'\d+', error)
-
-                    if found:
-                        count = found[-1]
-                        file_errors += int(count)
-                    else:
-                        pass
 
                 if number_of_lines:
-                    ratio = (float(file_errors)/float(number_of_lines)) * 100
-                    if ratio >= js_error_bar:
-                        points -= 1
-
                     ratio = ratio_of_similarity/counter
                     if ratio <= js_indent_bar:
-                        points -= 1
+                        points -= 25
 
                 else:
-                    points -= 2
-                '''
+                    points -= 25
+
                 response = {
                     'result': True,
                     'message': 'Code Quality Done',
-                    'points': points
+                    'points': float(points/10.0)
                 }
 
                 os.chdir("..")
@@ -176,8 +157,6 @@ class FrontAutomate(APIView):
         except Exception as e:
 
             traceback_string = traceback.format_exc()
-            print traceback_string
-            print e.message
             path = os.getcwd()
             tokens = path.split('/')
             if tokens[-1] != 'project':
@@ -190,7 +169,8 @@ class FrontAutomate(APIView):
             response = {
                 'message': 'An error occurred',
                 'result': False,
-                'exception': e.message
+                'exception': e.message,
+                'traceback': traceback_string
             }
 
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
